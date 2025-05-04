@@ -15,6 +15,23 @@ For help getting started with Flutter development, view the
 [online documentation](https://docs.flutter.dev/), which offers tutorials,
 samples, guidance on mobile development, and a full API reference.
 
-# Tony
 
+# Dev
+
+## launcher icons
+
+https://pub.dev/packages/flutter_launcher_icons
+
+1. dart run flutter_launcher_icons:generate
+2. 把 icon 放在 assets/icon/icon.png
+3. 編輯 flutter_launcher_icons.yaml 
+4. dart run flutter_launcher_icons:main
+
+# rename app
+
+flutter pub add rename_app
+dart run rename_app:main all="My App Name"
+
+# Run
 flutter run -d chrome
+flutter run -d M2101K7BNY # My Android Device

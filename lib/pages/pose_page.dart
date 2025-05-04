@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 class PosePage extends StatefulWidget {
+  const PosePage({super.key});
+
   @override
   State<PosePage> createState() => _PosePageState();
 }

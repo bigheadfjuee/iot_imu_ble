@@ -5,7 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:mrx_charts/mrx_charts.dart';
 
 class LinePage extends StatefulWidget {
-  const LinePage({Key? key}) : super(key: key);
+  const LinePage({super.key});
 
   @override
   State<LinePage> createState() => _LinePageState();

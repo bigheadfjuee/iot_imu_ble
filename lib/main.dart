@@ -1,15 +1,37 @@
+import 'dart:io';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:camera/camera.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:firebase_core/firebase_core.dart';
 
 import 'pages/pose_page.dart';
-import 'pages/camera_page.dart';
 import 'pages/monitor_page.dart';
-import 'pages/upload_page.dart';
 import 'pages/setting_page.dart';
+import 'pages/ble_scan_page.dart';
 
-void main() {
+import 'components/firebase_options.dart';
+
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  if (!kIsWeb && Platform.isAndroid) {
+    await _requestPermissions(); // 執行時權限請求
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+  }
+
   runApp(const MyApp());
+}
+
+Future<void> _requestPermissions() async {
+  await [
+    Permission.bluetooth,
+    Permission.bluetoothScan,
+    Permission.bluetoothConnect,
+    Permission.location, // 有些手機仍需開啟定位才能掃描BLE
+  ].request();
 }
 
 class MyApp extends StatelessWidget {
@@ -23,7 +45,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
-      home: const MyHomePage(title: 'IoT - BLE IMU'),
+      home: const MyHomePage(title: 'Smart Racket'),
     );
   }
 }
@@ -48,8 +70,7 @@ class _MyHomePageState extends State<MyHomePage> {
             bottom: const TabBar(
               tabs: [
                 Tab(icon: Icon(Icons.accessibility)),
-                Tab(icon: Icon(Icons.camera_alt)),
-                Tab(icon: Icon(Icons.upload_file)),
+                Tab(icon: Icon(Icons.bluetooth)),
                 Tab(icon: Icon(Icons.monitor_heart)),
                 Tab(icon: Icon(Icons.settings)),
               ],
@@ -57,13 +78,7 @@ class _MyHomePageState extends State<MyHomePage> {
             title: Text(widget.title),
           ),
           body: TabBarView(
-            children: [
-              PosePage(),
-              CameraPage(),
-              UploadPage(),
-              MonitorPage(),
-              SettingPage(),
-            ],
+            children: [PosePage(), BleScanPage(), MonitorPage(), SettingPage()],
           ),
         ),
       ),

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 class UploadPage extends StatefulWidget {
+  const UploadPage({super.key});
+
   @override
   State<UploadPage> createState() => _UploadPageState();
 }

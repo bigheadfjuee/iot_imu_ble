@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:mrx_charts/mrx_charts.dart';
 
 import '../components/line_page.dart';
 
 class MonitorPage extends StatefulWidget {
+  const MonitorPage({super.key});
+
   @override
   State<MonitorPage> createState() => _MonitorPageState();
 }
