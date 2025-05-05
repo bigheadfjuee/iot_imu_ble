@@ -75,21 +75,21 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return MaterialApp(
       home: DefaultTabController(
-        length: 4,
+        length: 3,
         child: Scaffold(
           appBar: AppBar(
             bottom: const TabBar(
               tabs: [
                 Tab(icon: Icon(Icons.accessibility)),
                 Tab(icon: Icon(Icons.bluetooth)),
-                Tab(icon: Icon(Icons.monitor_heart)),
+                // Tab(icon: Icon(Icons.monitor_heart)),
                 Tab(icon: Icon(Icons.settings)),
               ],
             ),
             title: Text(widget.title),
           ),
           body: TabBarView(
-            children: [PosePage(), BleScanPage(), MonitorPage(), SettingPage()],
+            children: [PosePage(), BleScanPage(), SettingPage()],
           ),
         ),
       ),

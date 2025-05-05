@@ -62,11 +62,13 @@ void setup() {
   imuService.addCharacteristic(imuDataChar);
   BLE.addService(imuService);
   imuDataChar.setValue((uint8_t*)"", 0);  // 設定一個初始空值，避免 notify 錯誤
+  
   BLE.setLocalName("SmartRacket");
   BLE.setAdvertisedService(imuService);
   BLE.advertise();
 
   Serial.println("BLE advertising started...");
+  
 }
 
 void loop() {
@@ -77,7 +79,7 @@ void loop() {
     Serial.println(central.address());
 
     // turn on the LED to indicate the connection:
-    digitalWrite(LED_BUILTIN, HIGH);
+    digitalWrite(ledPin, LOW);
 
     // 初始化時間記錄
     unsigned long lastSendTime = 0;
@@ -125,7 +127,7 @@ void loop() {
       }
     }
     // when the central disconnects, turn off the LED:
-    digitalWrite(LED_BUILTIN, LOW);
+    digitalWrite(ledPin, HIGH);
     Serial.println("Disconnected from central");
   }
 }

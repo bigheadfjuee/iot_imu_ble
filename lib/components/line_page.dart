@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:math' as math;
 
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
@@ -60,13 +59,23 @@ class _LinePageState extends State<LinePage> {
         axPoints.removeAt(0);
         ayPoints.removeAt(0);
         azPoints.removeAt(0);
+
+        gxPoints.removeAt(0);
+        gyPoints.removeAt(0);
+        gzPoints.removeAt(0);
       }
 
       setState(() {
         final imuData = context.read<ImuDataProvider>().imuData;
+        xValue = imuData.timestamp.toDouble();
+
         axPoints.add(FlSpot(xValue, imuData.aX));
         ayPoints.add(FlSpot(xValue, imuData.aY));
         azPoints.add(FlSpot(xValue, imuData.aZ));
+
+        gxPoints.add(FlSpot(xValue, imuData.gX));
+        gyPoints.add(FlSpot(xValue, imuData.gY));
+        gzPoints.add(FlSpot(xValue, imuData.gZ));
       });
     });
   }
@@ -79,36 +88,76 @@ class _LinePageState extends State<LinePage> {
           children: [
             const SizedBox(height: 12),
             Text(
-              'x: ${xValue.toStringAsFixed(1)}',
+              'timestamp: ${xValue.toStringAsFixed(1)}',
               style: const TextStyle(
                 color: AppColors.contentColorBlack,
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
               ),
             ),
-            Text(
-              'aX: ${axPoints.last.y.toStringAsFixed(1)}',
-              style: TextStyle(
-                color: widget.axColor,
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+            Row(
+              children: [
+                Spacer(),
+                Text(
+                  'aX: ${axPoints.last.y.toStringAsFixed(1)}',
+                  style: TextStyle(
+                    color: widget.axColor,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Spacer(),
+                Text(
+                  'aY: ${ayPoints.last.y.toStringAsFixed(1)}',
+                  style: TextStyle(
+                    color: widget.ayColor,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Spacer(),
+                Text(
+                  'aZ: ${azPoints.last.y.toStringAsFixed(1)}',
+                  style: TextStyle(
+                    color: widget.azColor,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Spacer(),
+              ],
             ),
-            Text(
-              'aY: ${ayPoints.last.y.toStringAsFixed(1)}',
-              style: TextStyle(
-                color: widget.ayColor,
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            Text(
-              'aZ: ${azPoints.last.y.toStringAsFixed(1)}',
-              style: TextStyle(
-                color: widget.azColor,
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+            Row(
+              children: [
+                Spacer(),
+                Text(
+                  'gX: ${gxPoints.last.y.toStringAsFixed(1)}',
+                  style: TextStyle(
+                    color: widget.gxColor,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Spacer(),
+                Text(
+                  'gY: ${gyPoints.last.y.toStringAsFixed(1)}',
+                  style: TextStyle(
+                    color: widget.gyColor,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Spacer(),
+                Text(
+                  'gZ: ${gzPoints.last.y.toStringAsFixed(1)}',
+                  style: TextStyle(
+                    color: widget.gzColor,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Spacer(),
+              ],
             ),
             const SizedBox(height: 12),
             AspectRatio(
@@ -132,6 +181,9 @@ class _LinePageState extends State<LinePage> {
                       axLine(axPoints),
                       ayLine(ayPoints),
                       azLine(azPoints),
+                      gxLine(gxPoints),
+                      gyLine(gyPoints),
+                      gzLine(gzPoints),
                     ],
                     titlesData: const FlTitlesData(show: false),
                   ),
@@ -175,6 +227,45 @@ class _LinePageState extends State<LinePage> {
       dotData: const FlDotData(show: false),
       gradient: LinearGradient(
         colors: [widget.azColor.withValues(alpha: 0), widget.azColor],
+        stops: const [0.1, 1.0],
+      ),
+      barWidth: 3,
+      isCurved: false,
+    );
+  }
+
+  LineChartBarData gxLine(List<FlSpot> points) {
+    return LineChartBarData(
+      spots: points,
+      dotData: const FlDotData(show: false),
+      gradient: LinearGradient(
+        colors: [widget.gxColor.withValues(alpha: 0), widget.gxColor],
+        stops: const [0.1, 1.0],
+      ),
+      barWidth: 3,
+      isCurved: false,
+    );
+  }
+
+  LineChartBarData gyLine(List<FlSpot> points) {
+    return LineChartBarData(
+      spots: points,
+      dotData: const FlDotData(show: false),
+      gradient: LinearGradient(
+        colors: [widget.gyColor.withValues(alpha: 0), widget.gyColor],
+        stops: const [0.1, 1.0],
+      ),
+      barWidth: 3,
+      isCurved: false,
+    );
+  }
+
+  LineChartBarData gzLine(List<FlSpot> points) {
+    return LineChartBarData(
+      spots: points,
+      dotData: const FlDotData(show: false),
+      gradient: LinearGradient(
+        colors: [widget.gzColor.withValues(alpha: 0), widget.gzColor],
         stops: const [0.1, 1.0],
       ),
       barWidth: 3,

@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'ble_data_manager.dart';
-import 'package:provider/provider.dart';
-
-import 'global_state.dart';
+import 'line_page.dart';
 
 class BleDataReceiverPage extends StatefulWidget {
   const BleDataReceiverPage({super.key});
@@ -206,6 +204,7 @@ class _BleDataReceiverPageState extends State<BleDataReceiverPage> {
             ),
           ),
           */
+          LinePage(),
         ],
       ),
     );

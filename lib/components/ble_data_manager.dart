@@ -124,15 +124,14 @@ class BleDataManager {
     final rawVoltage = buffer.getInt16(28, Endian.little); // ✅ 只讀 2 bytes
 
     // TODO: 顯示資料
-    ImuData newImuData =
-        ImuData()
-          ..timestamp = timestamp
-          ..aX = aX
-          ..aY = aY
-          ..aZ = aZ
-          ..gX = gX
-          ..gY = gY
-          ..gZ = gZ;
+    ImuData newImuData = ImuData();
+    newImuData.timestamp = timestamp;
+    newImuData.aX = aX;
+    newImuData.aY = aY;
+    newImuData.aZ = aZ;
+    newImuData.gX = gX;
+    newImuData.gY = gY;
+    newImuData.gZ = gZ;
 
     _context.read<ImuDataProvider>().update(newImuData);
 
@@ -198,7 +197,7 @@ class BleDataManager {
             .set(docData)
             .then((_) {
               final msg = "✅ $docId 上傳成功！";
-              print(msg);
+              debugPrint(msg);
 
               //清除舊的資料收集中訊息
               logMessages.removeWhere((e) => e.startsWith("📝 資料收集中"));
@@ -209,7 +208,7 @@ class BleDataManager {
             })
             .catchError((e) {
               final msg = "❌ 上傳失敗: $e";
-              print(msg);
+              debugPrint(msg);
               //清除舊的資料收集中訊息
               logMessages.removeWhere((e) => e.startsWith("📝 資料收集中"));
 
