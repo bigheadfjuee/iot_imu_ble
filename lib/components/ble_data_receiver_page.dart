@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'ble_data_manager.dart';
+import 'package:provider/provider.dart';
+
+import 'global_state.dart';
 
 class BleDataReceiverPage extends StatefulWidget {
   const BleDataReceiverPage({super.key});
@@ -17,7 +20,7 @@ class _BleDataReceiverPageState extends State<BleDataReceiverPage> {
   void initState() {
     super.initState();
     if (BleDataManager.instance.hasConnectedOnce &&
-      !BleDataManager.instance.uploadEnabled) {
+        !BleDataManager.instance.uploadEnabled) {
       _uploadEnabled = false;
       BleDataManager.instance.setUploadEnabled(false);
     } else {
@@ -25,6 +28,7 @@ class _BleDataReceiverPageState extends State<BleDataReceiverPage> {
     }
 
     BleDataManager.instance.addListener(_refreshUI);
+    BleDataManager.instance.setBuildContext(context);
   }
 
   @override
@@ -46,15 +50,14 @@ class _BleDataReceiverPageState extends State<BleDataReceiverPage> {
     _lastUIUpdate = now;
 
     setState(() {});
-    
+
     final prevLength = _previousLogLength ?? 0;
     _previousLogLength = logs.length;
 
     if (_uploadEnabled && logs.length > prevLength) {
       _scrollToBottom();
     }
-      
-    
+
     /*
     if (mounted) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -105,10 +108,7 @@ class _BleDataReceiverPageState extends State<BleDataReceiverPage> {
                 _uploadEnabled ? Icons.cloud_upload : Icons.cloud_off,
                 color: _uploadEnabled ? Colors.green : Colors.red,
               ),
-              Switch(
-                value: _uploadEnabled,
-                onChanged: _toggleUpload,
-              ),
+              Switch(value: _uploadEnabled, onChanged: _toggleUpload),
             ],
           ),
         ],
@@ -117,13 +117,16 @@ class _BleDataReceiverPageState extends State<BleDataReceiverPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (battery != null && batteryPercent != null)
-          Padding(
-            padding: const EdgeInsets.only(left: 16.0, top: 8),
-            child: Text(
-              "🔋 $batteryPercent%（${battery.toStringAsFixed(2)}V）",
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            Padding(
+              padding: const EdgeInsets.only(left: 16.0, top: 8),
+              child: Text(
+                "🔋 $batteryPercent%（${battery.toStringAsFixed(2)}V）",
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
-          ),
 
           if (!_uploadEnabled)
             Padding(
@@ -143,7 +146,10 @@ class _BleDataReceiverPageState extends State<BleDataReceiverPage> {
               padding: EdgeInsets.only(left: 16.0, bottom: 8),
               child: Text(
                 "❌ 裝置已斷線，停止接收資料",
-                style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  color: Colors.red,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
 
@@ -166,9 +172,10 @@ class _BleDataReceiverPageState extends State<BleDataReceiverPage> {
                       log,
                       style: TextStyle(
                         fontSize: 14,
-                        color: isSuccess
-                            ? Colors.green
-                            : isError
+                        color:
+                            isSuccess
+                                ? Colors.green
+                                : isError
                                 ? Colors.red
                                 : Colors.black,
                       ),

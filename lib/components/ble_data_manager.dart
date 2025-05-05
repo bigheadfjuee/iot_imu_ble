@@ -1,8 +1,13 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:intl/intl.dart';
-import 'dart:async';
+import 'package:provider/provider.dart';
+
+import 'global_state.dart';
 
 class BleDataManager {
   BleDataManager._internal();
@@ -97,6 +102,11 @@ class BleDataManager {
     _notifyListeners();
   }
 
+  late BuildContext _context; // Riverpod 的 WidgetRef
+  void setBuildContext(BuildContext context) {
+    _context = context;
+  }
+
   void _handleData(List<int> value) async {
     if (value.length != 30) return;
 
@@ -114,6 +124,17 @@ class BleDataManager {
     final rawVoltage = buffer.getInt16(28, Endian.little); // ✅ 只讀 2 bytes
 
     // TODO: 顯示資料
+    ImuData newImuData =
+        ImuData()
+          ..timestamp = timestamp
+          ..aX = aX
+          ..aY = aY
+          ..aZ = aZ
+          ..gX = gX
+          ..gY = gY
+          ..gZ = gZ;
+
+    _context.read<ImuDataProvider>().update(newImuData);
 
     if (_uploadEnabled) {
       final indexStr = "D_${_dataIndex.toString().padLeft(4, '0')}";

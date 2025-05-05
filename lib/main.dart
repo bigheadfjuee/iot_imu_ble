@@ -4,7 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:provider/provider.dart';
 
 import 'pages/pose_page.dart';
 import 'pages/monitor_page.dart';
@@ -12,6 +12,7 @@ import 'pages/setting_page.dart';
 import 'pages/ble_scan_page.dart';
 
 import 'components/firebase_options.dart';
+import 'components/global_state.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -24,9 +25,14 @@ Future<void> main() async {
   }
 
   // runApp(const MyApp());
+
   runApp(
-    // Adding ProviderScope enables Riverpod for the entire project
-    const ProviderScope(child: MyApp()),
+    /// Providers are above [MyApp] instead of inside it, so that tests
+    /// can use [MyApp] while mocking the providers
+    MultiProvider(
+      providers: [ChangeNotifierProvider(create: (_) => ImuDataProvider())],
+      child: const MyApp(),
+    ),
   );
 }
 

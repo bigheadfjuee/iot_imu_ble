@@ -3,13 +3,12 @@ import 'dart:math' as math;
 
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import '../components/global_state.dart';
+import 'global_state.dart';
 import 'app_colors.dart';
 
-class LinePage extends ConsumerStatefulWidget {
+class LinePage extends StatefulWidget {
   const LinePage({super.key});
 
   final Color axColor = AppColors.contentColorBlue;
@@ -20,10 +19,10 @@ class LinePage extends ConsumerStatefulWidget {
   final Color gzColor = AppColors.contentColorCyan;
 
   @override
-  ConsumerState<LinePage> createState() => _LinePageState();
+  State<LinePage> createState() => _LinePageState();
 }
 
-class _LinePageState extends ConsumerState<LinePage> {
+class _LinePageState extends State<LinePage> {
   final limitCount = 100;
   final axPoints = <FlSpot>[];
   final ayPoints = <FlSpot>[];
@@ -41,6 +40,7 @@ class _LinePageState extends ConsumerState<LinePage> {
   @override
   void initState() {
     super.initState();
+    /*
     timer = Timer.periodic(const Duration(milliseconds: 40), (timer) {
       while (axPoints.length > limitCount) {
         axPoints.removeAt(0);
@@ -53,6 +53,21 @@ class _LinePageState extends ConsumerState<LinePage> {
         azPoints.add(FlSpot(xValue, math.sin(xValue + 3)));
       });
       xValue += step;
+    });
+*/
+    timer = Timer.periodic(const Duration(milliseconds: 20), (timer) {
+      while (axPoints.length > limitCount) {
+        axPoints.removeAt(0);
+        ayPoints.removeAt(0);
+        azPoints.removeAt(0);
+      }
+
+      setState(() {
+        final imuData = context.read<ImuDataProvider>().imuData;
+        axPoints.add(FlSpot(xValue, imuData.aX));
+        ayPoints.add(FlSpot(xValue, imuData.aY));
+        azPoints.add(FlSpot(xValue, imuData.aZ));
+      });
     });
   }
 
