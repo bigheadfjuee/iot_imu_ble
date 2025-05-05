@@ -12,6 +12,6 @@ class MonitorPage extends StatefulWidget {
 class _MonitorPageState extends State<MonitorPage> {
   @override
   Widget build(BuildContext context) {
-    return const LinePage();
+    return SingleChildScrollView(child: LinePage());
   }
 }

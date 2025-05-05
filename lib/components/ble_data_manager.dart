@@ -1,5 +1,5 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:intl/intl.dart';
 import 'dart:async';
@@ -58,7 +58,9 @@ class BleDataManager {
   }
 
   Future<void> startListening(BluetoothDevice device) async {
-    connectedDeviceName = device.name; //儲存 BLE 裝置名稱
+    connectedDeviceName = device.platformName; //儲存 BLE 裝置名稱
+    debugPrint('advName": ${device.advName}');
+
     List<BluetoothService> services = await device.discoverServices();
     var service = services.firstWhere((s) => s.serviceUuid == serviceUuid);
     var characteristic = service.characteristics.firstWhere(
@@ -110,6 +112,8 @@ class BleDataManager {
     final gY = buffer.getFloat32(20, Endian.little);
     final gZ = buffer.getFloat32(24, Endian.little);
     final rawVoltage = buffer.getInt16(28, Endian.little); // ✅ 只讀 2 bytes
+
+    // TODO: 顯示資料
 
     if (_uploadEnabled) {
       final indexStr = "D_${_dataIndex.toString().padLeft(4, '0')}";
