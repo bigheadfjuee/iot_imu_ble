@@ -34,4 +34,5 @@ dart run rename_app:main all="My App Name"
 
 # Run
 flutter run -d chrome
-flutter run -d M2101K7BNY # My Android Device
+flutter run -d M2101K7BNY # Redmi Note 10S
+flutter run -d 2407FPN8EG # Xiami 14T Pro

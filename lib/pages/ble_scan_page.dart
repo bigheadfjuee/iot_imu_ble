@@ -39,7 +39,18 @@ class _BleScanPageState extends State<BleScanPage> {
     });
 
     await Future.delayed(const Duration(seconds: 5));
-    FlutterBluePlus.stopScan();
+    await FlutterBluePlus.stopScan();
+
+    if (scanResults.isNotEmpty) {
+      debugPrint("🔍 掃描到 ${scanResults.length} 個裝置");
+      for (var scan in scanResults) {
+        if (scan.device.platformName == "SmartRacket") {
+          _connectToDevice(scan.device);
+          break;
+        }
+      }
+    }
+
     setState(() {
       isScanning = false;
     });
@@ -47,6 +58,7 @@ class _BleScanPageState extends State<BleScanPage> {
 
   Future<void> _connectToDevice(BluetoothDevice device) async {
     try {
+      debugPrint("🔌 嘗試連線到 ${device.platformName} (${device.remoteId})");
       await device.connect();
       await BleDataManager.instance.startListening(device);
 
@@ -134,10 +146,11 @@ class _BleScanPageState extends State<BleScanPage> {
                 itemBuilder: (context, index) {
                   final result = scanResults[index];
                   final name =
-                      result.device.name.isNotEmpty
-                          ? result.device.name
+                      result.device.platformName.isNotEmpty
+                          ? result.device.platformName
                           : "（無名稱）";
-                  final isConnected = connectedDevice?.id == result.device.id;
+                  final isConnected =
+                      connectedDevice?.remoteId == result.device.remoteId;
 
                   return ListTile(
                     title: Text(
@@ -146,7 +159,7 @@ class _BleScanPageState extends State<BleScanPage> {
                         fontWeight: isConnected ? FontWeight.bold : null,
                       ),
                     ),
-                    subtitle: Text(result.device.id.toString()),
+                    subtitle: Text(result.device.remoteId.toString()),
                     trailing:
                         isConnected
                             ? Row(
