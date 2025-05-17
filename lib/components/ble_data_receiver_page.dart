@@ -1,7 +1,7 @@
 import 'dart:ffi';
 
 import 'package:flutter/material.dart';
-import 'package:tflite_flutter/tflite_flutter.dart' as tfl;
+// import 'package:tflite_flutter/tflite_flutter.dart' as tfl;
 import 'ble_data_manager.dart';
 import 'line_page.dart';
 
