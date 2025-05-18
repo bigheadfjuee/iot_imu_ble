@@ -188,11 +188,12 @@ class BleDataManager {
 
       // 到達設定筆數就上傳
       if (_dataIndex >= _maxDataCount) {
-        final docId = "Data_${DateFormat('yyyyMMdd_HHmmssSSS').format(now)}";
+        // final docId = "Data_${DateFormat('yyyyMMdd_HHmmssSSS').format(now)}";
+        final docId = DateFormat('yyyyMMdd_HHmm_ss_SSS').format(now);
         final docData = {"data": _dataMap};
 
         FirebaseFirestore.instance
-            .collection("TonyTest") // IMUData
+            .collection("Deom") // IMUData
             .doc(docId)
             .set(docData)
             .then((_) {

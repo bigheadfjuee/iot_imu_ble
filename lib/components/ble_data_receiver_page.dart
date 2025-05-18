@@ -158,7 +158,7 @@ class _BleDataReceiverPageState extends State<BleDataReceiverPage> {
             child: Scrollbar(
               controller: _scrollController,
               thumbVisibility: true,
-              thickness: 12,
+              thickness: 10,
               radius: const Radius.circular(8),
               child: ListView.builder(
                 controller: _scrollController,
@@ -186,6 +186,9 @@ class _BleDataReceiverPageState extends State<BleDataReceiverPage> {
               ),
             ),
           ),
+
+          LinePage(),
+
           // ✅ 可選的「到最上／下」按鈕區塊
           /*
           Padding(
@@ -207,7 +210,6 @@ class _BleDataReceiverPageState extends State<BleDataReceiverPage> {
             ),
           ),
           */
-          LinePage(),
         ],
       ),
     );

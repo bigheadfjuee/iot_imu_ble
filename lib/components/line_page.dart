@@ -13,6 +13,7 @@ class LinePage extends StatefulWidget {
   final Color axColor = AppColors.contentColorBlue;
   final Color ayColor = AppColors.contentColorYellow;
   final Color azColor = AppColors.contentColorOrange;
+
   final Color gxColor = AppColors.contentColorGreen;
   final Color gyColor = AppColors.contentColorPink;
   final Color gzColor = AppColors.contentColorCyan;
@@ -39,21 +40,7 @@ class _LinePageState extends State<LinePage> {
   @override
   void initState() {
     super.initState();
-    /*
-    timer = Timer.periodic(const Duration(milliseconds: 40), (timer) {
-      while (axPoints.length > limitCount) {
-        axPoints.removeAt(0);
-        ayPoints.removeAt(0);
-        azPoints.removeAt(0);
-      }
-      setState(() {
-        axPoints.add(FlSpot(xValue, math.sin(xValue)));
-        ayPoints.add(FlSpot(xValue, math.cos(xValue)));
-        azPoints.add(FlSpot(xValue, math.sin(xValue + 3)));
-      });
-      xValue += step;
-    });
-*/
+
     timer = Timer.periodic(const Duration(milliseconds: 20), (timer) {
       while (axPoints.length > limitCount) {
         axPoints.removeAt(0);
@@ -86,13 +73,73 @@ class _LinePageState extends State<LinePage> {
         ? Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const SizedBox(height: 12),
+            const SizedBox(height: 5),
             Text(
               'timestamp: ${xValue.toStringAsFixed(1)}',
               style: const TextStyle(
                 color: AppColors.contentColorBlack,
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
+              ),
+            ),
+
+            Row(
+              children: [
+                Spacer(),
+                Text(
+                  'gX: ${gxPoints.last.y.toStringAsFixed(1)}',
+                  style: TextStyle(
+                    color: widget.gxColor,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Spacer(),
+                Text(
+                  'gY: ${gyPoints.last.y.toStringAsFixed(1)}',
+                  style: TextStyle(
+                    color: widget.gyColor,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Spacer(),
+                Text(
+                  'gZ: ${gzPoints.last.y.toStringAsFixed(1)}',
+                  style: TextStyle(
+                    color: widget.gzColor,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Spacer(),
+              ],
+            ),
+            AspectRatio(
+              aspectRatio: 1.5,
+              child: Padding(
+                padding: const EdgeInsets.only(bottom: 5.0),
+                child: LineChart(
+                  LineChartData(
+                    minY: -1000,
+                    maxY: 1000,
+                    minX: axPoints.first.x,
+                    maxX: axPoints.last.x,
+                    lineTouchData: const LineTouchData(enabled: false),
+                    clipData: const FlClipData.all(),
+                    gridData: const FlGridData(
+                      show: true,
+                      drawVerticalLine: false,
+                    ),
+                    borderData: FlBorderData(show: false),
+                    lineBarsData: [
+                      gxLine(gxPoints),
+                      gyLine(gyPoints),
+                      gzLine(gzPoints),
+                    ],
+                    titlesData: const FlTitlesData(show: false),
+                  ),
+                ),
               ),
             ),
             Row(
@@ -127,47 +174,15 @@ class _LinePageState extends State<LinePage> {
                 Spacer(),
               ],
             ),
-            Row(
-              children: [
-                Spacer(),
-                Text(
-                  'gX: ${gxPoints.last.y.toStringAsFixed(1)}',
-                  style: TextStyle(
-                    color: widget.gxColor,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                Spacer(),
-                Text(
-                  'gY: ${gyPoints.last.y.toStringAsFixed(1)}',
-                  style: TextStyle(
-                    color: widget.gyColor,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                Spacer(),
-                Text(
-                  'gZ: ${gzPoints.last.y.toStringAsFixed(1)}',
-                  style: TextStyle(
-                    color: widget.gzColor,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                Spacer(),
-              ],
-            ),
-            const SizedBox(height: 12),
+
             AspectRatio(
-              aspectRatio: 1.5,
+              aspectRatio: 2,
               child: Padding(
-                padding: const EdgeInsets.only(bottom: 24.0),
+                padding: const EdgeInsets.only(bottom: 25.0),
                 child: LineChart(
                   LineChartData(
-                    minY: -1,
-                    maxY: 1,
+                    minY: -5.0,
+                    maxY: 5.0,
                     minX: axPoints.first.x,
                     maxX: axPoints.last.x,
                     lineTouchData: const LineTouchData(enabled: false),
@@ -181,9 +196,6 @@ class _LinePageState extends State<LinePage> {
                       axLine(axPoints),
                       ayLine(ayPoints),
                       azLine(azPoints),
-                      gxLine(gxPoints),
-                      gyLine(gyPoints),
-                      gzLine(gzPoints),
                     ],
                     titlesData: const FlTitlesData(show: false),
                   ),
