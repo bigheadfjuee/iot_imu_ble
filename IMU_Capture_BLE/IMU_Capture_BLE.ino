@@ -290,6 +290,7 @@ void calibrateIMUOffsets()
           float aX = myIMU.readFloatAccelX();
           float aY = myIMU.readFloatAccelY();
           float aZ = myIMU.readFloatAccelZ();
+          
           float gX = myIMU.readFloatGyroX();
           float gY = myIMU.readFloatGyroY();
           float gZ = myIMU.readFloatGyroZ();

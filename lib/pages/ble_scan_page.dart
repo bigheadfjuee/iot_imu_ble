@@ -45,7 +45,7 @@ class _BleScanPageState extends State<BleScanPage> {
       debugPrint("🔍 掃描到 ${scanResults.length} 個裝置");
       for (var scan in scanResults) {
         if (scan.device.platformName.contains("SmartRacket")) {
-          _connectToDevice(scan.device);
+          // _connectToDevice(scan.device); // TODO: 自動連線
           break;
         }
       }

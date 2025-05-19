@@ -7,6 +7,10 @@ import 'package:provider/provider.dart';
 import 'global_state.dart';
 import 'app_colors.dart';
 
+const double scaleA = 2.0; // Accelerometer scale
+const double scaleG = 500.0; // Gyroscope scale
+const double multiplierAx = 1.2; // 球桿握柄方向的移動量放大倍數(顯示用)
+
 class LinePage extends StatefulWidget {
   const LinePage({super.key});
 
@@ -56,7 +60,7 @@ class _LinePageState extends State<LinePage> {
         final imuData = context.read<ImuDataProvider>().imuData;
         xValue = imuData.timestamp.toDouble();
 
-        axPoints.add(FlSpot(xValue, imuData.aX));
+        axPoints.add(FlSpot(xValue, imuData.aX * multiplierAx));
         ayPoints.add(FlSpot(xValue, imuData.aY));
         azPoints.add(FlSpot(xValue, imuData.aZ));
 
@@ -84,65 +88,7 @@ class _LinePageState extends State<LinePage> {
             ),
 
             Row(
-              children: [
-                Spacer(),
-                Text(
-                  'gX: ${gxPoints.last.y.toStringAsFixed(1)}',
-                  style: TextStyle(
-                    color: widget.gxColor,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                Spacer(),
-                Text(
-                  'gY: ${gyPoints.last.y.toStringAsFixed(1)}',
-                  style: TextStyle(
-                    color: widget.gyColor,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                Spacer(),
-                Text(
-                  'gZ: ${gzPoints.last.y.toStringAsFixed(1)}',
-                  style: TextStyle(
-                    color: widget.gzColor,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                Spacer(),
-              ],
-            ),
-            AspectRatio(
-              aspectRatio: 1.5,
-              child: Padding(
-                padding: const EdgeInsets.only(bottom: 5.0),
-                child: LineChart(
-                  LineChartData(
-                    minY: -1000,
-                    maxY: 1000,
-                    minX: axPoints.first.x,
-                    maxX: axPoints.last.x,
-                    lineTouchData: const LineTouchData(enabled: false),
-                    clipData: const FlClipData.all(),
-                    gridData: const FlGridData(
-                      show: true,
-                      drawVerticalLine: false,
-                    ),
-                    borderData: FlBorderData(show: false),
-                    lineBarsData: [
-                      gxLine(gxPoints),
-                      gyLine(gyPoints),
-                      gzLine(gzPoints),
-                    ],
-                    titlesData: const FlTitlesData(show: false),
-                  ),
-                ),
-              ),
-            ),
-            Row(
+              //ax, ay, az
               children: [
                 Spacer(),
                 Text(
@@ -176,13 +122,14 @@ class _LinePageState extends State<LinePage> {
             ),
 
             AspectRatio(
-              aspectRatio: 2,
+              // ax, ay, az
+              aspectRatio: 1.5,
               child: Padding(
-                padding: const EdgeInsets.only(bottom: 25.0),
+                padding: const EdgeInsets.only(bottom: 5.0),
                 child: LineChart(
                   LineChartData(
-                    minY: -5.0,
-                    maxY: 5.0,
+                    minY: -scaleA,
+                    maxY: scaleA,
                     minX: axPoints.first.x,
                     maxX: axPoints.last.x,
                     lineTouchData: const LineTouchData(enabled: false),
@@ -196,6 +143,69 @@ class _LinePageState extends State<LinePage> {
                       axLine(axPoints),
                       ayLine(ayPoints),
                       azLine(azPoints),
+                    ],
+                    titlesData: const FlTitlesData(show: false),
+                  ),
+                ),
+              ),
+            ),
+
+            Row(
+              //gx, gy, gz
+              children: [
+                Spacer(),
+                Text(
+                  'gX: ${gxPoints.last.y.toStringAsFixed(1)}',
+                  style: TextStyle(
+                    color: widget.gxColor,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Spacer(),
+                Text(
+                  'gY: ${gyPoints.last.y.toStringAsFixed(1)}',
+                  style: TextStyle(
+                    color: widget.gyColor,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Spacer(),
+                Text(
+                  'gZ: ${gzPoints.last.y.toStringAsFixed(1)}',
+                  style: TextStyle(
+                    color: widget.gzColor,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Spacer(),
+              ],
+            ),
+
+            AspectRatio(
+              //gx, gy, gz
+              aspectRatio: 2,
+              child: Padding(
+                padding: const EdgeInsets.only(bottom: 25.0),
+                child: LineChart(
+                  LineChartData(
+                    minY: -scaleG,
+                    maxY: scaleG,
+                    minX: gxPoints.first.x,
+                    maxX: gxPoints.last.x,
+                    lineTouchData: const LineTouchData(enabled: false),
+                    clipData: const FlClipData.all(),
+                    gridData: const FlGridData(
+                      show: true,
+                      drawVerticalLine: false,
+                    ),
+                    borderData: FlBorderData(show: false),
+                    lineBarsData: [
+                      gxLine(gxPoints),
+                      gyLine(gyPoints),
+                      gzLine(gzPoints),
                     ],
                     titlesData: const FlTitlesData(show: false),
                   ),

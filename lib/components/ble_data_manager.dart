@@ -118,6 +118,7 @@ class BleDataManager {
     final aX = buffer.getFloat32(4, Endian.little);
     final aY = buffer.getFloat32(8, Endian.little);
     final aZ = buffer.getFloat32(12, Endian.little);
+
     final gX = buffer.getFloat32(16, Endian.little);
     final gY = buffer.getFloat32(20, Endian.little);
     final gZ = buffer.getFloat32(24, Endian.little);
@@ -129,6 +130,7 @@ class BleDataManager {
     newImuData.aX = aX;
     newImuData.aY = aY;
     newImuData.aZ = aZ;
+
     newImuData.gX = gX;
     newImuData.gY = gY;
     newImuData.gZ = gZ;
@@ -144,15 +146,10 @@ class BleDataManager {
         "aX": aX,
         "aY": aY,
         "aZ": aZ,
+
         "gX": gX,
         "gY": gY,
         "gZ": gZ,
-        //"aX": double.parse(aX.toStringAsFixed(6)),
-        //"aY": double.parse(aY.toStringAsFixed(6)),
-        //"aZ": double.parse(aZ.toStringAsFixed(6)),
-        //"gX": double.parse(gX.toStringAsFixed(6)),
-        //"gY": double.parse(gY.toStringAsFixed(6)),
-        //"gZ": double.parse(gZ.toStringAsFixed(6)),
       };
 
       _dataIndex++;
