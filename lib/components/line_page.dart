@@ -92,7 +92,7 @@ class _LinePageState extends State<LinePage> {
               children: [
                 Spacer(),
                 Text(
-                  'aX: ${axPoints.last.y.toStringAsFixed(1)}',
+                  'aX(x1.2): ${axPoints.last.y.toStringAsFixed(1)}',
                   style: TextStyle(
                     color: widget.axColor,
                     fontSize: 18,
