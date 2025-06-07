@@ -5,6 +5,12 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
+dependencies {
+    implementation("org.tensorflow:tensorflow-lite:2.10.0")
+    implementation("org.tensorflow:tensorflow-lite-gpu:2.10.0")
+    implementation("org.tensorflow:tensorflow-lite-gpu-api:2.10.0")
+}
+
 android {
     namespace = "com.example.iot_imu_ble"
     compileSdk = flutter.compileSdkVersion

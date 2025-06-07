@@ -1,4 +1,4 @@
-# iot_imu_ble
+# Flutter iot_imu_ble
 
 A new Flutter project.
 
@@ -15,9 +15,6 @@ For help getting started with Flutter development, view the
 [online documentation](https://docs.flutter.dev/), which offers tutorials,
 samples, guidance on mobile development, and a full API reference.
 
-
-# Dev
-
 ## launcher icons
 
 https://pub.dev/packages/flutter_launcher_icons
@@ -27,15 +24,40 @@ https://pub.dev/packages/flutter_launcher_icons
 3. 編輯 flutter_launcher_icons.yaml 
 4. dart run flutter_launcher_icons:main
 
-# rename app
+## rename app
 
 flutter pub add rename_app
 dart run rename_app:main all="My App Name"
 
-# Run
+## Run
 flutter run -d chrome
 flutter run -d M2101K7BNY # Redmi Note 10S
 flutter run -d 2407FPN8EG # Xiami 14T Pro
 
-# Build
+## Build
 flutter build apk --release --verbose
+
+# Android Tools
+
+C:\Users\tony\AppData\Local\Android\Sdk\platform-tools
+
+adb connect 192.168.1.21:45985
+
+# TensorFlow Lite
+
+## tflite flutter plugin
+
+https://pub.dev/packages/tflite_flutter
+
+https://github.com/tensorflow/flutter-tflite
+
+## 
+
+## Android
+在 android/app/build.gradle.kts 加入
+
+dependencies {
+    implementation("org.tensorflow:tensorflow-lite:2.10.0")
+    implementation("org.tensorflow:tensorflow-lite-gpu:2.10.0")
+    implementation("org.tensorflow:tensorflow-lite-gpu-api:2.10.0")
+}

@@ -3,6 +3,7 @@ import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 
 import '../components/ble_data_receiver_page.dart';
 import '../components/ble_data_manager.dart';
+import '../components/ble_data_posture.dart';
 
 class BleScanPage extends StatefulWidget {
   const BleScanPage({super.key});
@@ -87,9 +88,13 @@ class _BleScanPageState extends State<BleScanPage> {
         scanResults = List.from(scanResults);
       });
 
+      // Navigator.push(
+      //   context,
+      //   MaterialPageRoute(builder: (context) => const BleDataReceiverPage()),
+      // );
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => const BleDataReceiverPage()),
+        MaterialPageRoute(builder: (context) => const BleDataPosturePage()),
       );
     } catch (e) {
       print("❌ 連線失敗: $e");
@@ -123,6 +128,19 @@ class _BleScanPageState extends State<BleScanPage> {
     }
   }
 
+  void _navigateToPosturePage() {
+    if (connectedDevice != null) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const BleDataPosturePage()),
+      );
+    } else {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("尚未連接裝置")));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -134,6 +152,10 @@ class _BleScanPageState extends State<BleScanPage> {
             icon: const Icon(Icons.bar_chart),
             onPressed: _navigateToReceiverPage,
           ),
+          IconButton(
+            icon: const Icon(Icons.accessibility),
+            onPressed: _navigateToPosturePage,
+          ),
         ],
       ),
       body:
@@ -144,7 +166,16 @@ class _BleScanPageState extends State<BleScanPage> {
               : ListView.builder(
                 itemCount: scanResults.length,
                 itemBuilder: (context, index) {
-                  final result = scanResults[index];
+                  // 先將 scanResults 依 SmartRacket 名稱排序
+                  final sortedResults = List<ScanResult>.from(scanResults)
+                    ..sort((a, b) {
+                      final aIsSmartRacket =
+                          a.device.platformName.contains("SmartRacket") ? 0 : 1;
+                      final bIsSmartRacket =
+                          b.device.platformName.contains("SmartRacket") ? 0 : 1;
+                      return aIsSmartRacket.compareTo(bIsSmartRacket);
+                    });
+                  final result = sortedResults[index];
                   final name =
                       result.device.platformName.isNotEmpty
                           ? result.device.platformName
