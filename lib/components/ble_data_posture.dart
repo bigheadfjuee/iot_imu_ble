@@ -14,6 +14,8 @@ class _BleDataPosturePageState extends State<BleDataPosturePage> {
   late bool _uploadEnabled;
   DateTime? _lastUIUpdate;
   int? _previousLogLength;
+  final List<List<double>> _imuBuffer = [];  // ✅ BLE 資料累積用
+  String _predictedPosture = "---";         // ✅ 推理結果
 
   late Interpreter interpreter;
   Future<void> loadModel() async {
@@ -34,51 +36,94 @@ class _BleDataPosturePageState extends State<BleDataPosturePage> {
     BleDataManager.instance.addListener(_refreshUI);
     BleDataManager.instance.setBuildContext(context);
     loadModel();
+
+    // ✅ 監聽 BLE 每筆 IMU 資料（直接把資料送進 buffer）
+    BleDataManager.instance.onImuDataForPrediction = (data) {
+      final imuRow = [
+        data["aX"] ?? 0.0,
+        data["aY"] ?? 0.0,
+        data["aZ"] ?? 0.0,
+        data["gX"] ?? 0.0,
+        data["gY"] ?? 0.0,
+        data["gZ"] ?? 0.0,
+      ];
+
+      final List<double> imuRowDouble = imuRow.map((e) => (e as num).toDouble()).toList();
+      _imuBuffer.add(imuRowDouble);
+
+      if (_imuBuffer.length > 40) {
+        _imuBuffer.removeAt(0);
+      }
+
+      if (_imuBuffer.length == 40) {
+        classifyPosture();
+      }
+    };
   }
 
   Future<void> classifyPosture() async {
-    // 準備輸入數據
-    // var input = [/* 將圖像數據轉換為模型所需的格式 */];
-    // var output = List.filled(1, 0).reshape([1][1]);
-
-    // 執行推理
-    // interpreter.run(input, output);
-
-    // 處理輸出
-    // print(output);
-
-    /*
-    Input details: [
-    {'name': 'serving_default_keras_tensor: 0', 'index': 0, 'shape': array([
-            1,
-            40,
-            6,
-            1
-        ], dtype=int32), 'shape_signature': array([
-            -1,
-            40,
-            6,
-            1
-        ], dtype=int32), 'dtype': <class 'numpy.float32'>, 'quantization': (0.0,
-        0), 'quantization_parameters': {'scales': array([], dtype=float32), 'zero_points': array([], dtype=int32), 'quantized_dimension': 0
-        }, 'sparsity_parameters': {}
+    // 🔴 如果 buffer 不滿 40 筆就不推理
+    if (_imuBuffer.length < 40) {
+      print("❌ 不足 40 筆，無法推理");
+      return;
     }
-]
 
-Output details: [
-    {'name': 'StatefulPartitionedCall_1: 0', 'index': 19, 'shape': array([
-            1,
-            3
-        ], dtype=int32), 'shape_signature': array([
-            -1,
-            3
-        ], dtype=int32), 'dtype': <class 'numpy.float32'>, 'quantization': (0.0,
-        0), 'quantization_parameters': {'scales': array([], dtype=float32), 'zero_points': array([], dtype=int32), 'quantized_dimension': 0
-        }, 'sparsity_parameters': {}
+    try {
+      // ✅ 組成 TFLite 需要的輸入格式: [1, 40, 6, 1]
+      final input = [
+        _imuBuffer.map((row) => row.map((v) => [v]).toList()).toList()
+      ];
+
+      // ✅ 準備輸出空間: [1, 3]
+      final output = List.generate(1, (_) => List.filled(3, 0.0));
+
+      // ✅ 呼叫本地模型推理
+      interpreter.run(input, output);
+
+      final result = output[0]; // [0.1, 0.8, 0.1] 這樣
+      print("🎯 本地模型輸出: $result");
+
+      // 🔍 找最大值 index
+      final maxIndex = result.indexWhere(
+          (e) => e == result.reduce((a, b) => a > b ? a : b));
+
+      String posture;
+      switch (maxIndex) {
+        case 0:
+          posture = "drive";
+          break;
+        case 1:
+          posture = "other";
+          break;
+        case 2:
+          posture = "smash";
+          break;
+        default:
+          posture = "unknown";
+      }
+
+      // ✅ 在畫面上顯示結果
+      setState(() {
+        _predictedPosture = posture;
+      });
+
+      // ✅ 如果是 drive 或 smash，3 秒後還原顯示為 "---"
+      if (posture == "drive" || posture == "smash") {
+        Future.delayed(const Duration(seconds: 3), () {
+          // 🟡 確認目前畫面還在（避免 setState on unmounted）
+          if (mounted && (_predictedPosture == posture)) {
+            setState(() {
+              _predictedPosture = "---";
+            });
+          }
+        });
+      }
+    } catch (e) {
+      print("❌ 推理錯誤: $e");
     }
-]
-    */
   }
+
+  
 
   @override
   void dispose() {
@@ -156,7 +201,7 @@ Output details: [
 
           Center(
             child: Text(
-              "Other",
+              _predictedPosture,
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 color: Colors.blueGrey,

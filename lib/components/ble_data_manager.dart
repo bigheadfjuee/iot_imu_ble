@@ -31,6 +31,8 @@ class BleDataManager {
   int _dataIndex = 0; // 全域計數器
   final int _maxDataCount = 1000;
   final Map<String, Map<String, dynamic>> _dataMap = {};
+  void Function(Map<String, dynamic>)? onImuDataForPrediction;
+
 
   int _dotCounter = 0;
   DateTime _lastDotUpdateTime = DateTime.now().subtract(
@@ -136,6 +138,21 @@ class BleDataManager {
     newImuData.gZ = gZ;
 
     _context.read<ImuDataProvider>().update(newImuData);
+    
+    final imuData = {
+      "timestamp": timestamp,
+      "aX": aX,
+      "aY": aY,
+      "aZ": aZ,
+      "gX": gX,
+      "gY": gY,
+      "gZ": gZ,
+    };
+
+    // 🔴 如果有人設定 callback，就呼叫它
+    if (onImuDataForPrediction != null) {
+      onImuDataForPrediction!(imuData);
+    }
 
     if (_uploadEnabled) {
       final indexStr = "D_${_dataIndex.toString().padLeft(4, '0')}";
@@ -243,4 +260,7 @@ class BleDataManager {
     if (voltage <= minVoltage) return 0;
     return ((voltage - minVoltage) / (maxVoltage - minVoltage) * 100).round();
   }
+
+
+
 }

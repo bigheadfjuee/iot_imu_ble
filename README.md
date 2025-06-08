@@ -41,7 +41,7 @@ flutter build apk --release --verbose
 
 C:\Users\tony\AppData\Local\Android\Sdk\platform-tools
 
-adb connect 192.168.1.21:45985
+adb connect 192.168.1.21:41421
 
 # TensorFlow Lite
 
