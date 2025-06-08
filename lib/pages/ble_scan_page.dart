@@ -32,6 +32,7 @@ class _BleScanPageState extends State<BleScanPage> {
       isScanning = true;
     });
 
+    FlutterBluePlus.setLogLevel(LogLevel.warning);
     await FlutterBluePlus.startScan(timeout: const Duration(seconds: 5));
     FlutterBluePlus.scanResults.listen((results) {
       setState(() {

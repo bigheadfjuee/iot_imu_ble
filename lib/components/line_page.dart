@@ -16,11 +16,11 @@ class LinePage extends StatefulWidget {
 
   final Color axColor = AppColors.contentColorBlue;
   final Color ayColor = AppColors.contentColorYellow;
-  final Color azColor = AppColors.contentColorOrange;
+  final Color azColor = AppColors.contentColorRed;
 
-  final Color gxColor = AppColors.contentColorGreen;
-  final Color gyColor = AppColors.contentColorPink;
-  final Color gzColor = AppColors.contentColorCyan;
+  final Color gxColor = AppColors.contentColorBlue;
+  final Color gyColor = AppColors.contentColorYellow;
+  final Color gzColor = AppColors.contentColorRed;
 
   @override
   State<LinePage> createState() => _LinePageState();
@@ -92,7 +92,7 @@ class _LinePageState extends State<LinePage> {
               children: [
                 Spacer(),
                 Text(
-                  'aX(x1.2): ${axPoints.last.y.toStringAsFixed(1)}',
+                  'aX: ${axPoints.last.y.toStringAsFixed(1)}',
                   style: TextStyle(
                     color: widget.axColor,
                     fontSize: 18,

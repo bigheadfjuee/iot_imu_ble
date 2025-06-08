@@ -11,11 +11,9 @@ class BleDataPosturePage extends StatefulWidget {
 
 class _BleDataPosturePageState extends State<BleDataPosturePage> {
   final ScrollController _scrollController = ScrollController();
-  late bool _uploadEnabled;
   DateTime? _lastUIUpdate;
-  int? _previousLogLength;
-  final List<List<double>> _imuBuffer = [];  // ✅ BLE 資料累積用
-  String _predictedPosture = "---";         // ✅ 推理結果
+  final List<List<double>> _imuBuffer = []; // ✅ BLE 資料累積用
+  String _predictedPosture = "---"; // ✅ 推理結果
 
   late Interpreter interpreter;
   Future<void> loadModel() async {
@@ -25,13 +23,7 @@ class _BleDataPosturePageState extends State<BleDataPosturePage> {
   @override
   void initState() {
     super.initState();
-    if (BleDataManager.instance.hasConnectedOnce &&
-        !BleDataManager.instance.uploadEnabled) {
-      _uploadEnabled = false;
-      BleDataManager.instance.setUploadEnabled(false);
-    } else {
-      _uploadEnabled = BleDataManager.instance.uploadEnabled;
-    }
+    // ...existing code...
 
     BleDataManager.instance.addListener(_refreshUI);
     BleDataManager.instance.setBuildContext(context);
@@ -48,7 +40,8 @@ class _BleDataPosturePageState extends State<BleDataPosturePage> {
         data["gZ"] ?? 0.0,
       ];
 
-      final List<double> imuRowDouble = imuRow.map((e) => (e as num).toDouble()).toList();
+      final List<double> imuRowDouble =
+          imuRow.map((e) => (e as num).toDouble()).toList();
       _imuBuffer.add(imuRowDouble);
 
       if (_imuBuffer.length > 40) {
@@ -64,14 +57,14 @@ class _BleDataPosturePageState extends State<BleDataPosturePage> {
   Future<void> classifyPosture() async {
     // 🔴 如果 buffer 不滿 40 筆就不推理
     if (_imuBuffer.length < 40) {
-      print("❌ 不足 40 筆，無法推理");
+      // print("❌ 不足 40 筆，無法推理");
       return;
     }
 
     try {
       // ✅ 組成 TFLite 需要的輸入格式: [1, 40, 6, 1]
       final input = [
-        _imuBuffer.map((row) => row.map((v) => [v]).toList()).toList()
+        _imuBuffer.map((row) => row.map((v) => [v]).toList()).toList(),
       ];
 
       // ✅ 準備輸出空間: [1, 3]
@@ -81,11 +74,12 @@ class _BleDataPosturePageState extends State<BleDataPosturePage> {
       interpreter.run(input, output);
 
       final result = output[0]; // [0.1, 0.8, 0.1] 這樣
-      print("🎯 本地模型輸出: $result");
+      // print("🎯 本地模型輸出: $result");
 
       // 🔍 找最大值 index
       final maxIndex = result.indexWhere(
-          (e) => e == result.reduce((a, b) => a > b ? a : b));
+        (e) => e == result.reduce((a, b) => a > b ? a : b),
+      );
 
       String posture;
       switch (maxIndex) {
@@ -123,8 +117,6 @@ class _BleDataPosturePageState extends State<BleDataPosturePage> {
     }
   }
 
-  
-
   @override
   void dispose() {
     BleDataManager.instance.removeListener(_refreshUI);
@@ -135,7 +127,7 @@ class _BleDataPosturePageState extends State<BleDataPosturePage> {
   void _refreshUI() {
     if (!mounted) return;
 
-    final logs = BleDataManager.instance.logMessages;
+    // ...existing code...
     final now = DateTime.now();
     if (_lastUIUpdate != null &&
         now.difference(_lastUIUpdate!) < const Duration(milliseconds: 100)) {
@@ -146,12 +138,7 @@ class _BleDataPosturePageState extends State<BleDataPosturePage> {
 
     setState(() {});
 
-    final prevLength = _previousLogLength ?? 0;
-    _previousLogLength = logs.length;
-
-    if (_uploadEnabled && logs.length > prevLength) {
-      _scrollToBottom();
-    }
+    _scrollToBottom();
   }
 
   void _scrollToBottom() {
@@ -162,15 +149,13 @@ class _BleDataPosturePageState extends State<BleDataPosturePage> {
 
   @override
   Widget build(BuildContext context) {
-    final logs = BleDataManager.instance.logMessages;
+    // ...existing code...
     final isConnected = BleDataManager.instance.isDeviceConnected;
     final battery = BleDataManager.instance.latestBattery;
     final batteryPercent = BleDataManager.instance.batteryPercent;
 
     return Scaffold(
-      appBar: AppBar(title: const Text("姿勢判斷"), actions: [Row(children: [
-            ],
-          )]),
+      appBar: AppBar(title: const Text("姿勢判斷")),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

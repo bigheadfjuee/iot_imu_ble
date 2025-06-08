@@ -37,6 +37,14 @@ flutter run -d 2407FPN8EG # Xiami 14T Pro
 ## Build
 flutter build apk --release --verbose
 
+## Debug
+
+dart devtools
+
+https://docs.flutter.dev/tools/devtools/vscode
+
+https://docs.flutter.dev/testing/code-debugging
+
 # Android Tools
 
 C:\Users\tony\AppData\Local\Android\Sdk\platform-tools

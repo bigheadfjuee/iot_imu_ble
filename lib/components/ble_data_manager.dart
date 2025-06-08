@@ -33,7 +33,6 @@ class BleDataManager {
   final Map<String, Map<String, dynamic>> _dataMap = {};
   void Function(Map<String, dynamic>)? onImuDataForPrediction;
 
-
   int _dotCounter = 0;
   DateTime _lastDotUpdateTime = DateTime.now().subtract(
     const Duration(seconds: 1),
@@ -138,7 +137,7 @@ class BleDataManager {
     newImuData.gZ = gZ;
 
     _context.read<ImuDataProvider>().update(newImuData);
-    
+
     final imuData = {
       "timestamp": timestamp,
       "aX": aX,
@@ -260,7 +259,4 @@ class BleDataManager {
     if (voltage <= minVoltage) return 0;
     return ((voltage - minVoltage) / (maxVoltage - minVoltage) * 100).round();
   }
-
-
-
 }
