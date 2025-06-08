@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:developer' as developer;
 import 'package:tflite_flutter/tflite_flutter.dart';
 import 'line_page.dart';
 import 'ble_data_manager.dart';
@@ -14,6 +15,7 @@ class _BleDataPosturePageState extends State<BleDataPosturePage> {
   DateTime? _lastUIUpdate;
   final List<List<double>> _imuBuffer = []; // ✅ BLE 資料累積用
   String _predictedPosture = "---"; // ✅ 推理結果
+  bool _isLockPosture = true; // ✅ 是否鎖定姿勢推理
 
   late Interpreter interpreter;
   Future<void> loadModel() async {
@@ -23,7 +25,6 @@ class _BleDataPosturePageState extends State<BleDataPosturePage> {
   @override
   void initState() {
     super.initState();
-    // ...existing code...
 
     BleDataManager.instance.addListener(_refreshUI);
     BleDataManager.instance.setBuildContext(context);
@@ -49,6 +50,18 @@ class _BleDataPosturePageState extends State<BleDataPosturePage> {
       }
 
       if (_imuBuffer.length == 40) {
+        // final prev = _imuBuffer[_imuBuffer.length - 2];
+        // final curr = _imuBuffer.last;
+        // // 計算 gX, gY, gZ 的變動量
+        // final deltaGX = (curr[3] - prev[3]).abs();
+        // final deltaGY = (curr[4] - prev[4]).abs();
+        // final deltaGZ = (curr[5] - prev[5]).abs();
+        // // 設定一個閾值，例如 5.0，可依實際需求調整
+        // const threshold = 1.0;
+        // if (deltaGX > threshold || deltaGY > threshold || deltaGZ > threshold) {
+        //   debugPrint("🔄 姿勢變化，開始推理");
+        // classifyPosture();
+        // }
         classifyPosture();
       }
     };
@@ -57,7 +70,7 @@ class _BleDataPosturePageState extends State<BleDataPosturePage> {
   Future<void> classifyPosture() async {
     // 🔴 如果 buffer 不滿 40 筆就不推理
     if (_imuBuffer.length < 40) {
-      // print("❌ 不足 40 筆，無法推理");
+      developer.log("❌ 不足 40 筆，無法推理");
       return;
     }
 
@@ -74,7 +87,7 @@ class _BleDataPosturePageState extends State<BleDataPosturePage> {
       interpreter.run(input, output);
 
       final result = output[0]; // [0.1, 0.8, 0.1] 這樣
-      // print("🎯 本地模型輸出: $result");
+      // debugPrint("🎯 本地模型輸出: $result");
 
       // 🔍 找最大值 index
       final maxIndex = result.indexWhere(
@@ -96,24 +109,38 @@ class _BleDataPosturePageState extends State<BleDataPosturePage> {
           posture = "unknown";
       }
 
-      // ✅ 在畫面上顯示結果
-      setState(() {
-        _predictedPosture = posture;
-      });
+      if (posture != "other") {
+        debugPrint("posture: $posture");
+      }
 
       // ✅ 如果是 drive 或 smash，3 秒後還原顯示為 "---"
-      if (posture == "drive" || posture == "smash") {
-        Future.delayed(const Duration(seconds: 3), () {
-          // 🟡 確認目前畫面還在（避免 setState on unmounted）
-          if (mounted && (_predictedPosture == posture)) {
-            setState(() {
-              _predictedPosture = "---";
-            });
-          }
+      if (_isLockPosture) {
+        if (posture == "drive" || posture == "smash") {
+          setState(() {
+            _predictedPosture = posture;
+          });
+
+          Future.delayed(const Duration(seconds: 3), () {
+            if (mounted && (_predictedPosture == posture)) {
+              setState(() {
+                _predictedPosture = "---";
+              });
+            }
+          });
+        }
+
+        if (_predictedPosture == "---") {
+          setState(() {
+            _predictedPosture = posture;
+          });
+        }
+      } else {
+        setState(() {
+          _predictedPosture = posture;
         });
       }
     } catch (e) {
-      print("❌ 推理錯誤: $e");
+      developer.log("❌ 推理錯誤: $e");
     }
   }
 
@@ -137,14 +164,6 @@ class _BleDataPosturePageState extends State<BleDataPosturePage> {
     _lastUIUpdate = now;
 
     setState(() {});
-
-    _scrollToBottom();
-  }
-
-  void _scrollToBottom() {
-    if (_scrollController.hasClients) {
-      _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
-    }
   }
 
   @override
@@ -155,7 +174,20 @@ class _BleDataPosturePageState extends State<BleDataPosturePage> {
     final batteryPercent = BleDataManager.instance.batteryPercent;
 
     return Scaffold(
-      appBar: AppBar(title: const Text("姿勢判斷")),
+      appBar: AppBar(
+        title: const Text("姿勢判斷"),
+        actions: [
+          const Text("凍結3秒", style: TextStyle(fontSize: 16)),
+          Switch(
+            value: _isLockPosture,
+            onChanged: (value) {
+              setState(() {
+                _isLockPosture = value;
+              });
+            },
+          ),
+        ],
+      ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
