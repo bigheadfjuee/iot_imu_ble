@@ -35,8 +35,6 @@ class _BleDataReceiverPageState extends State<BleDataReceiverPage> {
     };
   }
 
-  // didChangeDependencies 不再需要 setBuildContext
-
   @override
   void dispose() {
     BleDataManager.instance.onImuDataForPrediction = null;

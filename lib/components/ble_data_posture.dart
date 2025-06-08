@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'dart:developer' as developer;
 import 'package:tflite_flutter/tflite_flutter.dart';
 import 'line_page.dart';
 import 'ble_data_manager.dart';
+import 'global_state.dart';
 
 class BleDataPosturePage extends StatefulWidget {
   const BleDataPosturePage({super.key});
@@ -13,7 +15,7 @@ class BleDataPosturePage extends StatefulWidget {
 class _BleDataPosturePageState extends State<BleDataPosturePage> {
   DateTime? _lastUIUpdate;
   final List<List<double>> _imuBuffer = []; // ✅ BLE 資料累積用
-  String _predictedPosture = "---"; // ✅ 推理結果
+  String _predictedPosture = "other"; // ✅ 推理結果
   bool _isLockPosture = true; // ✅ 是否鎖定姿勢推理
 
   late Interpreter interpreter;
@@ -31,7 +33,12 @@ class _BleDataPosturePageState extends State<BleDataPosturePage> {
     }
 
     BleDataManager.instance.addListener(_refreshUI);
-    BleDataManager.instance.setBuildContext(context);
+    // 設定 IMU 資料 callback，直接用 context 更新 provider
+    BleDataManager.instance.onImuDataUpdate = (imuData) {
+      if (mounted) {
+        context.read<ImuDataProvider>().update(imuData);
+      }
+    };
     loadModel();
 
     // ✅ 監聽 BLE 每筆 IMU 資料（直接把資料送進 buffer）
@@ -98,17 +105,18 @@ class _BleDataPosturePageState extends State<BleDataPosturePage> {
           posture = "smash";
           break;
         default:
-          posture = "unknown";
+          posture = "other";
       }
 
       if (posture != "other") {
         debugPrint("posture: $posture");
       }
 
-      // ✅ 如果是 drive 或 smash，3 秒後還原顯示為 "---"
+      // ✅ 如果是 drive 或 smash，3 秒後還原顯示為 "other"
       if (_isLockPosture) {
         if (posture == "drive" || posture == "smash") {
           if (_predictedPosture != "other") {
+            // 避免 other => drive / smash => smash / drive 的情況
             return;
           }
 
@@ -143,6 +151,7 @@ class _BleDataPosturePageState extends State<BleDataPosturePage> {
   @override
   void dispose() {
     BleDataManager.instance.onImuDataForPrediction = null;
+    BleDataManager.instance.onImuDataUpdate = null;
     BleDataManager.instance.removeListener(_refreshUI);
     interpreter.close();
     super.dispose();
