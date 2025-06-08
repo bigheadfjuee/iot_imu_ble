@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'ble_data_manager.dart';
 import 'line_page.dart';
+import 'global_state.dart';
 
 class BleDataReceiverPage extends StatefulWidget {
   const BleDataReceiverPage({super.key});
@@ -24,13 +26,21 @@ class _BleDataReceiverPageState extends State<BleDataReceiverPage> {
     } else {
       _uploadEnabled = BleDataManager.instance.uploadEnabled;
     }
-
     BleDataManager.instance.addListener(_refreshUI);
-    BleDataManager.instance.setBuildContext(context);
+    // 設定 IMU 資料 callback，直接用 context 更新 provider
+    BleDataManager.instance.onImuDataUpdate = (imuData) {
+      if (mounted) {
+        context.read<ImuDataProvider>().update(imuData);
+      }
+    };
   }
+
+  // didChangeDependencies 不再需要 setBuildContext
 
   @override
   void dispose() {
+    BleDataManager.instance.onImuDataForPrediction = null;
+    BleDataManager.instance.onImuDataUpdate = null;
     BleDataManager.instance.removeListener(_refreshUI);
     super.dispose();
   }
@@ -56,7 +66,6 @@ class _BleDataReceiverPageState extends State<BleDataReceiverPage> {
       _scrollToBottom();
     }
 
-    /*
     if (mounted) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
@@ -67,18 +76,11 @@ class _BleDataReceiverPageState extends State<BleDataReceiverPage> {
         }
       });
     }
-    */
   }
 
   void _scrollToBottom() {
     if (_scrollController.hasClients) {
       _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
-    }
-  }
-
-  void _scrollToTop() {
-    if (_scrollController.hasClients) {
-      _scrollController.jumpTo(0);
     }
   }
 
@@ -185,28 +187,6 @@ class _BleDataReceiverPageState extends State<BleDataReceiverPage> {
           ),
 
           LinePage(),
-
-          // ✅ 可選的「到最上／下」按鈕區塊
-          /*
-          Padding(
-            padding: const EdgeInsets.all(8),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                ElevatedButton.icon(
-                  onPressed: _scrollToTop,
-                  icon: const Icon(Icons.arrow_upward),
-                  label: const Text("到最上面"),
-                ),
-                ElevatedButton.icon(
-                  onPressed: _scrollToBottom,
-                  icon: const Icon(Icons.arrow_downward),
-                  label: const Text("到最下面"),
-                ),
-              ],
-            ),
-          ),
-          */
         ],
       ),
     );

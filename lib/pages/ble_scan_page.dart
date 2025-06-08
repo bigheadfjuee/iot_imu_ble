@@ -45,12 +45,6 @@ class _BleScanPageState extends State<BleScanPage> {
 
     if (scanResults.isNotEmpty) {
       debugPrint("🔍 掃描到 ${scanResults.length} 個裝置");
-      for (var scan in scanResults) {
-        if (scan.device.platformName.contains("SmartRacket")) {
-          // _connectToDevice(scan.device); // TODO: 自動連線
-          break;
-        }
-      }
     }
 
     setState(() {
@@ -69,7 +63,7 @@ class _BleScanPageState extends State<BleScanPage> {
       // 監聽斷線事件
       device.connectionState.listen((state) {
         if (state == BluetoothConnectionState.disconnected) {
-          print("🔌 裝置已斷線");
+          debugPrint("🔌 裝置已斷線");
 
           // 通知 BleDataManager
           BleDataManager.instance.setDeviceConnectionStatus(false);
@@ -89,16 +83,14 @@ class _BleScanPageState extends State<BleScanPage> {
         scanResults = List.from(scanResults);
       });
 
+      // 連線後自動切換
+      // if (!mounted) return;
       // Navigator.push(
       //   context,
-      //   MaterialPageRoute(builder: (context) => const BleDataReceiverPage()),
+      //   MaterialPageRoute(builder: (context) => const BleDataPosturePage()),
       // );
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => const BleDataPosturePage()),
-      );
     } catch (e) {
-      print("❌ 連線失敗: $e");
+      debugPrint("❌ 連線失敗: $e");
     }
   }
 
@@ -118,6 +110,7 @@ class _BleScanPageState extends State<BleScanPage> {
 
   void _navigateToReceiverPage() {
     if (connectedDevice != null) {
+      if (!mounted) return;
       Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => const BleDataReceiverPage()),
@@ -131,6 +124,7 @@ class _BleScanPageState extends State<BleScanPage> {
 
   void _navigateToPosturePage() {
     if (connectedDevice != null) {
+      if (!mounted) return;
       Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => const BleDataPosturePage()),
@@ -152,10 +146,12 @@ class _BleScanPageState extends State<BleScanPage> {
           IconButton(
             icon: const Icon(Icons.bar_chart),
             onPressed: _navigateToReceiverPage,
+            color: connectedDevice == null ? Colors.grey : null,
           ),
           IconButton(
             icon: const Icon(Icons.accessibility),
             onPressed: _navigateToPosturePage,
+            color: connectedDevice == null ? Colors.grey : null,
           ),
         ],
       ),

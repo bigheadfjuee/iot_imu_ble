@@ -11,7 +11,6 @@ class BleDataPosturePage extends StatefulWidget {
 }
 
 class _BleDataPosturePageState extends State<BleDataPosturePage> {
-  final ScrollController _scrollController = ScrollController();
   DateTime? _lastUIUpdate;
   final List<List<double>> _imuBuffer = []; // ✅ BLE 資料累積用
   String _predictedPosture = "---"; // ✅ 推理結果
@@ -25,6 +24,11 @@ class _BleDataPosturePageState extends State<BleDataPosturePage> {
   @override
   void initState() {
     super.initState();
+
+    if (BleDataManager.instance.hasConnectedOnce &&
+        !BleDataManager.instance.uploadEnabled) {
+      BleDataManager.instance.setUploadEnabled(false);
+    }
 
     BleDataManager.instance.addListener(_refreshUI);
     BleDataManager.instance.setBuildContext(context);
@@ -50,18 +54,6 @@ class _BleDataPosturePageState extends State<BleDataPosturePage> {
       }
 
       if (_imuBuffer.length == 40) {
-        // final prev = _imuBuffer[_imuBuffer.length - 2];
-        // final curr = _imuBuffer.last;
-        // // 計算 gX, gY, gZ 的變動量
-        // final deltaGX = (curr[3] - prev[3]).abs();
-        // final deltaGY = (curr[4] - prev[4]).abs();
-        // final deltaGZ = (curr[5] - prev[5]).abs();
-        // // 設定一個閾值，例如 5.0，可依實際需求調整
-        // const threshold = 1.0;
-        // if (deltaGX > threshold || deltaGY > threshold || deltaGZ > threshold) {
-        //   debugPrint("🔄 姿勢變化，開始推理");
-        // classifyPosture();
-        // }
         classifyPosture();
       }
     };
@@ -116,20 +108,24 @@ class _BleDataPosturePageState extends State<BleDataPosturePage> {
       // ✅ 如果是 drive 或 smash，3 秒後還原顯示為 "---"
       if (_isLockPosture) {
         if (posture == "drive" || posture == "smash") {
+          if (_predictedPosture != "other") {
+            return;
+          }
+
           setState(() {
             _predictedPosture = posture;
           });
 
           Future.delayed(const Duration(seconds: 3), () {
-            if (mounted && (_predictedPosture == posture)) {
+            if (mounted) {
               setState(() {
-                _predictedPosture = "---";
+                _predictedPosture = "other"; // reset posture
               });
             }
           });
         }
 
-        if (_predictedPosture == "---") {
+        if (_predictedPosture == "other") {
           setState(() {
             _predictedPosture = posture;
           });
@@ -146,6 +142,7 @@ class _BleDataPosturePageState extends State<BleDataPosturePage> {
 
   @override
   void dispose() {
+    BleDataManager.instance.onImuDataForPrediction = null;
     BleDataManager.instance.removeListener(_refreshUI);
     interpreter.close();
     super.dispose();
@@ -154,7 +151,6 @@ class _BleDataPosturePageState extends State<BleDataPosturePage> {
   void _refreshUI() {
     if (!mounted) return;
 
-    // ...existing code...
     final now = DateTime.now();
     if (_lastUIUpdate != null &&
         now.difference(_lastUIUpdate!) < const Duration(milliseconds: 100)) {
@@ -168,7 +164,6 @@ class _BleDataPosturePageState extends State<BleDataPosturePage> {
 
   @override
   Widget build(BuildContext context) {
-    // ...existing code...
     final isConnected = BleDataManager.instance.isDeviceConnected;
     final battery = BleDataManager.instance.latestBattery;
     final batteryPercent = BleDataManager.instance.batteryPercent;

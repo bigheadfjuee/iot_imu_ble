@@ -5,7 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:intl/intl.dart';
-import 'package:provider/provider.dart';
+// import 'package:provider/provider.dart'; // 已移除 context 依賴
 
 import 'global_state.dart';
 
@@ -13,7 +13,6 @@ class BleDataManager {
   BleDataManager._internal();
   static final BleDataManager instance = BleDataManager._internal();
 
-  final List<Map<String, dynamic>> _batchBuffer = []; // 收集中尚未打包的資料
   final List<Map<String, dynamic>> structuredData = []; // 已打包但未上傳成功的資料
   final List<VoidCallback> _listeners = [];
   final List<String> logMessages = [];
@@ -25,7 +24,7 @@ class BleDataManager {
   bool _uploadEnabled = false;
   double? latestBattery;
   int? batteryPercent;
-  bool isDeviceConnected = true;
+  bool isDeviceConnected = false;
   bool get uploadEnabled => _uploadEnabled;
   int? oldRawVoltage = 0;
   int _dataIndex = 0; // 全域計數器
@@ -84,18 +83,9 @@ class BleDataManager {
     }
 
     _characteristic = characteristic;
-    _bleSubscription = _characteristic!.onValueReceived.listen(_handleData);
-
-    //characteristic.onValueReceived.listen(_handleData);
-    //_characteristic = characteristic;
-
-    /*
-    // 🔁 避免重複綁 listener
-    if (_characteristic == null || _characteristic != characteristic) {
-      _characteristic = characteristic;
-      _characteristic!.onValueReceived.listen(_handleData);
+    if (_characteristic != null) {
+      _bleSubscription = _characteristic!.onValueReceived.listen(_handleData);
     }
-    */
   }
 
   void setUploadEnabled(bool enabled) {
@@ -103,10 +93,7 @@ class BleDataManager {
     _notifyListeners();
   }
 
-  late BuildContext _context; // Riverpod 的 WidgetRef
-  void setBuildContext(BuildContext context) {
-    _context = context;
-  }
+  void Function(ImuData)? onImuDataUpdate;
 
   void _handleData(List<int> value) async {
     if (value.length != 30) return;
@@ -125,7 +112,6 @@ class BleDataManager {
     final gZ = buffer.getFloat32(24, Endian.little);
     final rawVoltage = buffer.getInt16(28, Endian.little); // ✅ 只讀 2 bytes
 
-    // TODO: 顯示資料
     ImuData newImuData = ImuData();
     newImuData.timestamp = timestamp;
     newImuData.aX = aX;
@@ -136,7 +122,9 @@ class BleDataManager {
     newImuData.gY = gY;
     newImuData.gZ = gZ;
 
-    _context.read<ImuDataProvider>().update(newImuData);
+    if (onImuDataUpdate != null) {
+      onImuDataUpdate!(newImuData);
+    }
 
     final imuData = {
       "timestamp": timestamp,
@@ -173,30 +161,19 @@ class BleDataManager {
       // 狀態提示：收集中...
       if (_dataMap.length < _maxDataCount) {
         final now = DateTime.now();
-
         // ✅ 每 1 秒才更新一次動畫點點
         if (now.difference(_lastDotUpdateTime) >= const Duration(seconds: 1)) {
           _dotCounter = (_dotCounter + 1) % 4; // 0,1,2,3
           final dots = '...' * _dotCounter;
           final message = "📝 資料收集中$dots";
-
           if (logMessages.isNotEmpty &&
               logMessages.last.startsWith("📝 資料收集中")) {
             logMessages.removeLast();
           }
           logMessages.add(message);
           _notifyListeners();
-
           _lastDotUpdateTime = now;
         }
-
-        /*
-        if (logMessages.isNotEmpty && logMessages.last.startsWith("📝 資料收集中")) {
-          logMessages.removeLast();
-        }
-        logMessages.add("📝 資料收集中...");
-        _notifyListeners();
-        */
       }
 
       // 到達設定筆數就上傳
@@ -212,10 +189,8 @@ class BleDataManager {
             .then((_) {
               final msg = "✅ $docId 上傳成功！";
               debugPrint(msg);
-
               //清除舊的資料收集中訊息
               logMessages.removeWhere((e) => e.startsWith("📝 資料收集中"));
-
               //新增成功訊息
               logMessages.add(msg);
               _notifyListeners();
@@ -225,7 +200,6 @@ class BleDataManager {
               debugPrint(msg);
               //清除舊的資料收集中訊息
               logMessages.removeWhere((e) => e.startsWith("📝 資料收集中"));
-
               //新增失敗訊息
               logMessages.add(msg);
               _notifyListeners();
